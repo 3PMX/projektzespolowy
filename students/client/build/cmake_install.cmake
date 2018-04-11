@@ -1,4 +1,4 @@
-# Install script for directory: /home/piotr/Pulpit/students/client
+# Install script for directory: /home/piotrek/Pulpit/ChatApp/projektzespolowy/students/client
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -33,25 +33,25 @@ if(NOT DEFINED CMAKE_INSTALL_SO_NO_EXE)
 endif()
 
 if(NOT CMAKE_INSTALL_COMPONENT OR "${CMAKE_INSTALL_COMPONENT}" STREQUAL "Unspecified")
-  if(EXISTS "$ENV{DESTDIR}/home/piotr/Pulpit/students/client/exec/RootProject" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}/home/piotr/Pulpit/students/client/exec/RootProject")
+  if(EXISTS "$ENV{DESTDIR}/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/client/exec/RootProject" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/client/exec/RootProject")
     file(RPATH_CHECK
-         FILE "$ENV{DESTDIR}/home/piotr/Pulpit/students/client/exec/RootProject"
+         FILE "$ENV{DESTDIR}/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/client/exec/RootProject"
          RPATH "")
   endif()
   list(APPEND CMAKE_ABSOLUTE_DESTINATION_FILES
-   "/home/piotr/Pulpit/students/client/exec/RootProject")
+   "/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/client/exec/RootProject")
   if(CMAKE_WARN_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(WARNING "ABSOLUTE path INSTALL DESTINATION : ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
   if(CMAKE_ERROR_ON_ABSOLUTE_INSTALL_DESTINATION)
     message(FATAL_ERROR "ABSOLUTE path INSTALL DESTINATION forbidden (by caller): ${CMAKE_ABSOLUTE_DESTINATION_FILES}")
   endif()
-file(INSTALL DESTINATION "/home/piotr/Pulpit/students/client/exec" TYPE EXECUTABLE FILES "/home/piotr/Pulpit/students/client/build/RootProject")
-  if(EXISTS "$ENV{DESTDIR}/home/piotr/Pulpit/students/client/exec/RootProject" AND
-     NOT IS_SYMLINK "$ENV{DESTDIR}/home/piotr/Pulpit/students/client/exec/RootProject")
+file(INSTALL DESTINATION "/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/client/exec" TYPE EXECUTABLE FILES "/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/client/build/RootProject")
+  if(EXISTS "$ENV{DESTDIR}/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/client/exec/RootProject" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/client/exec/RootProject")
     if(CMAKE_INSTALL_DO_STRIP)
-      execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}/home/piotr/Pulpit/students/client/exec/RootProject")
+      execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/client/exec/RootProject")
     endif()
   endif()
 endif()
@@ -64,5 +64,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/piotr/Pulpit/students/client/build/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/client/build/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

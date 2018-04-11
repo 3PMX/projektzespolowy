@@ -51,16 +51,16 @@ int main(int argc, char const *argv[])
         exit(EXIT_FAILURE);
     }
 
-while(true) {
-    	if ((new_socket = accept(server_fd, (struct sockaddr *)&address,
-                       (socklen_t*)&addrlen))<0)	
-    {
-        perror("accept");
-        exit(EXIT_FAILURE);
+    while(true) {
+            if ((new_socket = accept(server_fd, (struct sockaddr *)&address,
+                        (socklen_t*)&addrlen))<0)	
+        {
+            perror("accept");
+            exit(EXIT_FAILURE);
+        }
+        std::thread tl(clientHandler, new_socket);
+            tl.detach();
     }
-	std::thread tl(clientHandler, new_socket);
-		tl.detach();
-}
 
     return 0;
 }

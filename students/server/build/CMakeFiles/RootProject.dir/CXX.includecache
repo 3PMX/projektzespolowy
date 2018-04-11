@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/piotr/Pulpit/students/server/sources/main.cpp
+/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/server/sources/main.cpp
 stdio.h
 -
 sys/socket.h

@@ -1,7 +1,7 @@
-/home/piotr/Pulpit/students/server/build/CMakeFiles/install.dir
-/home/piotr/Pulpit/students/server/build/CMakeFiles/list_install_components.dir
-/home/piotr/Pulpit/students/server/build/CMakeFiles/rebuild_cache.dir
-/home/piotr/Pulpit/students/server/build/CMakeFiles/RootProject.dir
-/home/piotr/Pulpit/students/server/build/CMakeFiles/install/local.dir
-/home/piotr/Pulpit/students/server/build/CMakeFiles/install/strip.dir
-/home/piotr/Pulpit/students/server/build/CMakeFiles/edit_cache.dir
+/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/server/build/CMakeFiles/install.dir
+/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/server/build/CMakeFiles/list_install_components.dir
+/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/server/build/CMakeFiles/rebuild_cache.dir
+/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/server/build/CMakeFiles/RootProject.dir
+/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/server/build/CMakeFiles/install/local.dir
+/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/server/build/CMakeFiles/install/strip.dir
+/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/server/build/CMakeFiles/edit_cache.dir

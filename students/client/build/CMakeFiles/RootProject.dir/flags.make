@@ -6,5 +6,5 @@ CXX_FLAGS =  -Wall -pthread -O0 -g -std=c++11
 
 CXX_DEFINES = 
 
-CXX_INCLUDES = -I/home/piotr/Pulpit/students/client/includes 
+CXX_INCLUDES = -I/home/piotrek/Pulpit/ChatApp/projektzespolowy/students/client/includes 
 
