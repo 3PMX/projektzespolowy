@@ -37,6 +37,6 @@ int main(int argc, char const *argv[])
         printf("\nConnection Failed \n");
         return -1;
     }
-    printf("POLACZONE! GRATULACJE");
+    printf("Połączono\n");
     return 0;
 }
