@@ -6,11 +6,41 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <thread>
+#include <iostream>
 #define PORT 8080
 
-void clientHandler(int socket) {
-printf("Connect!\n");
+struct Header {
+    unsigned int msgID;
+    unsigned int contentSize;
+    char payload[1];
+};
+
+struct Login {
+    char username[128];
+    char passwd[128];
+};
+
+void clientHandler(int new_socket) {
+    printf("Polaczono!\n");
+
+    char buffer[1024];
+    
+    recv(new_socket, buffer, 1024, 0);
+
+    Header* receiveMsg = (Header*)buffer;
+    Login* receivePayload = (Login*)(receiveMsg->payload);
+
+    std::cout<< receiveMsg->msgID <<std::endl;
+    std::cout<< receiveMsg->contentSize <<std::endl;
+    std::cout<< receivePayload->username <<std::endl;
+    std::cout<< receivePayload->passwd <<std::endl;
+
+    if(receiveMsg->contentSize == 1) {
+        printf("Wybrales logowanie\n");
+    }
+
 }
+
 int main(int argc, char const *argv[])
 {
     int server_fd, new_socket, valread;
@@ -59,8 +89,9 @@ int main(int argc, char const *argv[])
             exit(EXIT_FAILURE);
         }
         std::thread tl(clientHandler, new_socket);
-            tl.detach();
+        tl.detach();
     }
-
+    
     return 0;
 }
+

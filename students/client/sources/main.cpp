@@ -7,6 +7,17 @@
 #include <arpa/inet.h>
 #define PORT 8080
 
+struct Header {
+    unsigned int msgID;
+    unsigned int contentSize;
+    char payload[1];
+};
+
+struct Login {
+    char username[128];
+    char passwd[128];
+};
+
 int main(int argc, char const *argv[])
 {
     struct sockaddr_in address;
@@ -38,5 +49,19 @@ int main(int argc, char const *argv[])
         return -1;
     }
     printf("Połączono\n");
+    
+    unsigned int msgSize = sizeof(Header) * sizeof(Login) - sizeof(char);
+    
+    Login data = {"Piotrek", "Haslo"};
+    
+    Header* msg = (Header*)malloc(msgSize);
+
+    msg->msgID = 1;
+    msg->contentSize = sizeof(Login);
+
+    memcpy(msg->payload, &data, sizeof(Login));
+
+    send(sock, (char*)msg, msgSize, 0);
+
     return 0;
 }
