@@ -20,6 +20,13 @@ struct Login {
     char passwd[128];
 };
 
+struct Register {
+    char username[128];
+    char passwd[128];
+    char repasswd[128];
+    char email[128];
+};
+
 void clientHandler(int new_socket) {
     printf("Polaczono!\n");
 
@@ -28,15 +35,26 @@ void clientHandler(int new_socket) {
     recv(new_socket, buffer, 1024, 0);
 
     Header* receiveMsg = (Header*)buffer;
-    Login* receivePayload = (Login*)(receiveMsg->payload);
 
     std::cout<< receiveMsg->msgID <<std::endl;
     std::cout<< receiveMsg->contentSize <<std::endl;
-    std::cout<< receivePayload->username <<std::endl;
-    std::cout<< receivePayload->passwd <<std::endl;
 
-    if(receiveMsg->contentSize == 1) {
-        printf("Wybrales logowanie\n");
+    if(receiveMsg->msgID == 1) {
+        printf("Ktos zalogował sie\nDane logowania:\n");
+        
+        Login* receivePayload = (Login*)(receiveMsg->payload);
+
+        std::cout<< receivePayload->username <<std::endl;
+        std::cout<< receivePayload->passwd <<std::endl;
+    }
+    else if(receiveMsg->msgID == 2) {
+        printf("Ktos zarejestrowal sie\nDane rejestracji:\n");
+
+        Register* receivePayload = (Register*)(receiveMsg->payload);
+
+        std::cout<< receivePayload->username <<std::endl;
+        std::cout<< receivePayload->passwd <<std::endl;
+        std::cout<< receivePayload->email <<std::endl;
     }
 
 }
@@ -47,8 +65,6 @@ int main(int argc, char const *argv[])
     struct sockaddr_in address;
     int opt = 1;
     int addrlen = sizeof(address);
-    char buffer[1024] = {0};
-    char *hello = "Hello from server";
 
     // Creating socket file descriptor
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
@@ -80,6 +96,7 @@ int main(int argc, char const *argv[])
         perror("listen");
         exit(EXIT_FAILURE);
     }
+    printf("Serwer odpalony\n");
 
     while(true) {
             if ((new_socket = accept(server_fd, (struct sockaddr *)&address,

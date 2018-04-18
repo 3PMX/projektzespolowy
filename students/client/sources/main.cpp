@@ -5,6 +5,7 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <iostream>
 #define PORT 8080
 
 struct Header {
@@ -16,6 +17,13 @@ struct Header {
 struct Login {
     char username[128];
     char passwd[128];
+};
+
+struct Register {
+    char username[128];
+    char passwd[128];
+    char repasswd[128];
+    char email[128];
 };
 
 int main(int argc, char const *argv[])
@@ -50,18 +58,54 @@ int main(int argc, char const *argv[])
     }
     printf("Połączono\n");
     
-    unsigned int msgSize = sizeof(Header) * sizeof(Login) - sizeof(char);
+    int choise;
+    unsigned int msgSize;
+    Header* msg;
+
+    std::cout<<"Rejestracja - 2\nLogowanie - 1\n";
+    std::cin>>choise;
+
+    switch(choise) {
+        case 1:
+            {
+                msgSize = sizeof(Header) * sizeof(Login) - sizeof(char);
+        
+                Login loginData = {"Piotrek", "Haslo"};
+
+                msg = (Header*)malloc(msgSize);
+
+                msg->msgID = 1;
+                msg->contentSize = sizeof(Login);
+
+                memcpy(msg->payload, &loginData, sizeof(Login));
+
+                send(sock, (char*)msg, msgSize, 0);
+
+                break;
+            }
+        case 2:
+            {
+                msgSize = sizeof(Header) * sizeof(Register) - sizeof(char);
+        
+                Register registerData = {"user", "passwd", "passwd", "mail@mail.xx"};
+
+                msg = (Header*)malloc(msgSize);
+
+                msg->msgID = 2;
+                msg->contentSize = sizeof(Register);
+
+                memcpy(msg->payload, &registerData, sizeof(Register));
+
+                send(sock, (char*)msg, msgSize, 0);
+
+                break;
+            }
+        default:
+            break;
+
+    }
     
-    Login data = {"Piotrek", "Haslo"};
     
-    Header* msg = (Header*)malloc(msgSize);
-
-    msg->msgID = 1;
-    msg->contentSize = sizeof(Login);
-
-    memcpy(msg->payload, &data, sizeof(Login));
-
-    send(sock, (char*)msg, msgSize, 0);
 
     return 0;
 }
