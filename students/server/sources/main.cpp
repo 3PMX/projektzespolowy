@@ -11,6 +11,7 @@
 #include <vector>
 #include <cstdlib>
 #include <string>
+#include <mutex>
 #define PORT 8080
 
 struct Header {
@@ -30,13 +31,20 @@ struct Register {
     char repasswd[128];
 };
 
+struct activeUsers {
+    char username[128];
+    int socket;
+};
+
 const char* database = "database.txt";
 std::vector<Login> loginData;
+std::vector<activeUsers> users;
+std::mutex mtx;
 
-void inputData(std::fstream &file, Register* data, std::vector<Login> vec) {
+void inputData(std::fstream &file, std::vector<Login> vec) {
     for(unsigned int i = 0; i < vec.size(); i++) {
-        file<<data->username<<" ";
-        file<<data->passwd<<"\n";
+        file<<vec[i].username<<" "
+            <<vec[i].passwd<<"\n";
     }
 
 }
@@ -51,14 +59,14 @@ bool fileExist(const char* name) {
     return true;
 }
 
-void saveData(const char* name, Register* data, const std::vector<Login> vec) {
+void saveData(const char* name, const std::vector<Login> vec) {
     std::fstream file(name, std::ios::app | std::ios::ate);
 
     if(!file.good()) {
         printf("Nie mozna otworzyc bazy danych!\n");
         exit(EXIT_FAILURE);
     }
-    inputData(file,data, vec);
+    inputData(file, vec);
     file.close();
 }
 
@@ -82,10 +90,12 @@ std::vector<Login> readData(const char* name) {
     
         data.push_back(tempData);
     }
+    file.close();
+
     return data;
 }
 
-void clientHandler(int new_socket) {
+void clientHandler(int new_socket, std::vector<Login> user) {
     printf("Polaczono!\n");
 
     char buffer[1024];
@@ -96,11 +106,9 @@ void clientHandler(int new_socket) {
     Header* receiveMsg = (Header*)buffer;
     Header* msg;
     unsigned int msgSize;
+    bool isAuth = false;
     //std::cout<< receiveMsg->msgID <<std::endl;
     //std::cout<< receiveMsg->contentSize <<std::endl;
-
-    std::vector<Login> user = readData(database);
-    std::cout<< user[0].username<< " " << user[0].passwd;
 
     if(receiveMsg->msgID == 1) {
         
@@ -110,32 +118,47 @@ void clientHandler(int new_socket) {
 
         Login* receivePayload = (Login*)(receiveMsg->payload);
 
-        for(unsigned int i = 0;i < user.size(); i++) {
+        for(unsigned int i = 0;i < user.size()-1; i++) 
+        {
             Login userInfo = user.at(i);
+            activeUsers tempUsers;
 
-            if((receivePayload->username != userInfo.username) && (receivePayload->passwd != userInfo.passwd)) {
+            //std::cout<<"Porownuje " << userInfo.username << " i " << userInfo.passwd<< std::endl;
+            //std::cout<<"Z " << receivePayload->username << " i " << receivePayload->passwd<< std::endl;
+
+            if( ( strcmp(receivePayload->username, userInfo.username) == 0) && ( strcmp(receivePayload->passwd, userInfo.passwd) == 0) )
+            {
+                mtx.lock();
+
+                strcpy(tempUsers.username, receivePayload->username);
+                tempUsers.socket = new_socket;
+
+                users.push_back(tempUsers);
+
+                mtx.unlock();
 
                 msg = (Header*)malloc(msgSize);
-
-                memcpy(msg->payload, &error, sizeof(error));
-                
-                send(new_socket, (char*)msg, msgSize, 0);
-                break;
-            }
-            else {
-
-                msg = (Header*)malloc(msgSize);
-
-                memcpy(msg->payload, &success, sizeof(success));
-                
-                send(new_socket, (char*)msg, msgSize, 0);
-                break;
 
                 printf("Ktos zalogował sie\nDane logowania:\n");
         
                 std::cout<< receivePayload->username <<std::endl;
                 std::cout<< receivePayload->passwd <<std::endl;
+
+                memcpy(msg->payload, &success, sizeof(success));
+                
+                send(new_socket, (char*)msg, msgSize, 0);
+
+                isAuth = true;
+                std::cout<<users[0].username<<std::endl;
             }
+        }
+        if(!isAuth)
+        {
+            msg = (Header*)malloc(msgSize);
+            
+            memcpy(msg->payload, &error, sizeof(error));
+                
+            send(new_socket, (char*)msg, msgSize, 0);
         }
 
         
@@ -148,12 +171,13 @@ void clientHandler(int new_socket) {
         char error[128] = "Taki użytkownik już istnieje!\n";
         char success[128] = "Zarejestrowano pomyślnie!\n";
 
-        for(unsigned int i = 0; i <user.size(); i++) {
+        for(unsigned int i = 0; i <user.size()-1; i++) {
             Login userInfo = user.at(i);
 
-            if(receivePayload->username != userInfo.username) {
+            if(strcmp(receivePayload->username, userInfo.username) != 0) {
 
                 Login loginInfo;
+                activeUsers tempUsers;
 
                 msg = (Header*)malloc(msgSize);
 
@@ -161,24 +185,35 @@ void clientHandler(int new_socket) {
                 std::cout<< receivePayload->username <<std::endl;
                 std::cout<< receivePayload->passwd <<std::endl;
 
+                mtx.lock();
+
                 memcpy(&loginInfo, msg->payload, sizeof(Login));
 
+                strcpy(tempUsers.username, receivePayload->username);
+                tempUsers.socket = new_socket;
+
+                users.push_back(tempUsers);
                 loginData.push_back(loginInfo);
+
+                saveData(database, loginData);
+
+                mtx.unlock();
 
                 memcpy(msg->payload, &success, sizeof(success));
                 
                 send(new_socket, (char*)msg, msgSize, 0);
 
-                break;
+                isAuth = true;
+
+                std::cout<< users[0].username<<std::endl;
             }
-            else {
+            if(!isAuth) {
 
                 msg = (Header*)malloc(msgSize);
 
                 memcpy(msg->payload, &error, sizeof(error));
                 
                 send(new_socket, (char*)msg, msgSize, 0);
-                break;
             }
         }
     }
@@ -226,6 +261,9 @@ int main(int argc, char const *argv[])
         printf("Brak bazy danych!!!\n");
         exit(EXIT_FAILURE);
     }
+
+    std::vector<Login> user = readData(database);
+
     printf("Serwer odpalony\n");
 
     while(true) {
@@ -235,7 +273,7 @@ int main(int argc, char const *argv[])
             perror("accept");
             exit(EXIT_FAILURE);
         }
-        std::thread tl(clientHandler, new_socket);
+        std::thread tl(clientHandler, new_socket, user);
         tl.detach();
     }
     

@@ -21,4 +21,16 @@ arpa/inet.h
 -
 thread
 -
+iostream
+-
+fstream
+-
+vector
+-
+cstdlib
+-
+string
+-
+mutex
+-
 

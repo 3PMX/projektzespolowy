@@ -27,8 +27,7 @@ struct Register {
 
 int main(int argc, char const *argv[])
 {
-    struct sockaddr_in address;
-    int sock = 0, valread;
+    int sock = 0;
     struct sockaddr_in serv_addr;
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
@@ -59,6 +58,7 @@ int main(int argc, char const *argv[])
     unsigned int msgSize;
     Header* msg;
     char buffer[1024];
+    bool isAuth = false;
 
     std::cout<<"Rejestracja - 2\nLogowanie - 1\n";
     std::cin>>choise;
@@ -88,7 +88,13 @@ int main(int argc, char const *argv[])
                     Header* receiveMsg = (Header*)buffer;
                     
                     std::cout<< receiveMsg->payload <<std::endl;
+
+                    if(strcmp(receiveMsg->payload, "Zalogowano pomyślnie!\n") == 0) {
+                        isAuth = true;
+                    }
                 }
+
+                free(msg);
 
                 break;
             }
@@ -115,16 +121,34 @@ int main(int argc, char const *argv[])
                     break;
                 }
                 else {
-                    memcpy(msg->payload, &registerData, sizeof(Register));
+                    memcpy(msg->payload, registerData, sizeof(Register));
 
                     send(sock, (char*)msg, msgSize, 0);
                 }
+
+                if(recv(sock, buffer, 1024, 0) > 0) {
+                    Header* receiveMsg = (Header*)buffer;
+                    
+                    std::cout<< receiveMsg->payload <<std::endl;
+
+                    if(strcmp(receiveMsg->payload, "Zarejestrowano pomyślnie!\n") == 0) {
+                        isAuth = true;
+                    }
+                }
+
+                free(msg);
 
                 break;
             }
         default:
             break;
 
+    }
+    if(isAuth) {
+        std::cout<<"\nwszystko ok"<<std::endl;
+    }
+    else {
+        std::cout<<"\ncos nie halo"<<std::endl;
     }
     
     
