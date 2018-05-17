@@ -46,7 +46,7 @@ void inputData(std::fstream &file, std::vector<Login> vec) {
         file<<vec[i].username<<" "
             <<vec[i].passwd<<"\n";
     }
-
+    vec.clear();
 }
 
 bool fileExist(const char* name) {
@@ -161,63 +161,69 @@ void clientHandler(int new_socket, std::vector<Login> user) {
             send(new_socket, (char*)msg, msgSize, 0);
         }
 
+        //free(msg);
         
     }
     else if(receiveMsg->msgID == 2) {
         
-
         Register* receivePayload = (Register*)(receiveMsg->payload);
 
         char error[128] = "Taki użytkownik już istnieje!\n";
         char success[128] = "Zarejestrowano pomyślnie!\n";
 
-        for(unsigned int i = 0; i <user.size()-1; i++) {
+        for(unsigned int i = 0; !isAuth && i < user.size()-1; i++) {
             Login userInfo = user.at(i);
 
-            if(strcmp(receivePayload->username, userInfo.username) != 0) {
+            //std::cout<<"Porownuje " << userInfo.username << " z " << receivePayload->username<< std::endl;
 
-                Login loginInfo;
-                activeUsers tempUsers;
+            isAuth = (strcmp(receivePayload->username, userInfo.username) == 0);
+        }
 
-                msg = (Header*)malloc(msgSize);
+        if(!isAuth) {
+            //std::cout<<"Mozesz dodac"<<std::endl;
 
-                printf("Ktos zarejestrowal sie\nDane rejestracji:\n");
-                std::cout<< receivePayload->username <<std::endl;
-                std::cout<< receivePayload->passwd <<std::endl;
+            Login loginInfo;
+            activeUsers tempUsers;
 
-                mtx.lock();
+            msg = (Header*)malloc(msgSize);
 
-                memcpy(&loginInfo, msg->payload, sizeof(Login));
+            printf("Ktos zarejestrowal sie\nDane rejestracji:\n");
+            std::cout<< receivePayload->username <<std::endl;
+            std::cout<< receivePayload->passwd <<std::endl;
 
-                strcpy(tempUsers.username, receivePayload->username);
-                tempUsers.socket = new_socket;
+            mtx.lock();
 
-                users.push_back(tempUsers);
-                loginData.push_back(loginInfo);
+            //memcpy(&loginInfo, msg->payload, sizeof(Login)); --nie działa tak nie wiem czemu :p
+            strcpy(loginInfo.username, receivePayload->username);
+            strcpy(loginInfo.passwd, receivePayload->passwd);
 
-                saveData(database, loginData);
+            strcpy(tempUsers.username, receivePayload->username);
+            tempUsers.socket = new_socket;
 
-                mtx.unlock();
+            users.push_back(tempUsers);
+            loginData.push_back(loginInfo);
 
-                memcpy(msg->payload, &success, sizeof(success));
+            saveData(database, loginData);
+
+            mtx.unlock();
+
+            memcpy(msg->payload, &success, sizeof(success));
                 
-                send(new_socket, (char*)msg, msgSize, 0);
+            send(new_socket, (char*)msg, msgSize, 0);
 
-                isAuth = true;
+            //std::cout<< loginInfo.username<<std::endl;
+            //std::cout<< loginInfo.passwd<<std::endl;
 
-                std::cout<< users[0].username<<std::endl;
-            }
-            if(!isAuth) {
+        }
+        else {
+            //std::cout<<"Nie mozesz dodac"<<std::endl;
+            msg = (Header*)malloc(msgSize);
 
-                msg = (Header*)malloc(msgSize);
-
-                memcpy(msg->payload, &error, sizeof(error));
+            memcpy(msg->payload, &error, sizeof(error));
                 
-                send(new_socket, (char*)msg, msgSize, 0);
-            }
+            send(new_socket, (char*)msg, msgSize, 0);
         }
     }
-
 }
 
 int main(int argc, char const *argv[])
@@ -264,8 +270,12 @@ int main(int argc, char const *argv[])
 
     std::vector<Login> user = readData(database);
 
-    printf("Serwer odpalony\n");
-
+    std::cout<<"Server is running"<<std::endl;
+    
+    for(unsigned int i = 0; i <user.size()-1; i++ ) {
+        std::cout<<user[i].username<<" "<<user[i].passwd<<std::endl;
+    }
+    
     while(true) {
             if ((new_socket = accept(server_fd, (struct sockaddr *)&address,
                         (socklen_t*)&addrlen))<0)	

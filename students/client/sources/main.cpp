@@ -52,7 +52,7 @@ int main(int argc, char const *argv[])
         printf("\nConnection Failed \n");
         return -1;
     }
-    printf("Połączono\n");
+    std::cout<<"Connected!"<<std::endl;
     
     int choise;
     unsigned int msgSize;
@@ -135,8 +135,6 @@ int main(int argc, char const *argv[])
                         isAuth = true;
                     }
                 }
-
-                free(msg);
 
                 break;
             }
