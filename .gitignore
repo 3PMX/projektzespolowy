@@ -34,3 +34,6 @@ target
 *.exe
 *.out
 *.app
+students/client/build/RootProject
+students/server/build/RootProject
+students/client/build/CMakeFiles/RootProject.dir/CXX.includecache
