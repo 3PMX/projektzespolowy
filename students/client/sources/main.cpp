@@ -6,6 +6,7 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <iostream>
+#include <thread>
 #define PORT 8080
 
 struct Header {
@@ -24,6 +25,40 @@ struct Register {
     char passwd[128];
     char repasswd[128];
 };
+
+struct Message {
+    char who[128];
+    char msgContent[1024];
+};
+
+char nickname[128];
+
+void rcvMsg(int sock, char buffer[]) {
+    if(recv(sock, buffer, 1024, 0) > 0) {
+        Header* receiveMsg = (Header*)buffer;
+            
+        Message* receivePayload = (Message*)(receiveMsg->payload);
+
+        std::cout<<receivePayload->who<<": "<<receivePayload->msgContent<<std::endl;
+    }
+}
+
+void sndMsg(int sock, unsigned int msgSize, Header* msg) {
+    msgSize = sizeof(Header) * sizeof(Message) - sizeof(char);
+        
+    msg = (Header*)malloc(msgSize);
+        
+    Message* msgDetails = new Message;
+
+    std::cout<<">";
+    std::cin>>msgDetails->msgContent;
+
+    memcpy(msgDetails->who, &nickname, sizeof(nickname));
+
+    memcpy(msg->payload, msgDetails, sizeof(Message));
+
+    send(sock, (char*)msg, msgSize, 0);
+}
 
 int main(int argc, char const *argv[])
 {
@@ -80,6 +115,8 @@ int main(int argc, char const *argv[])
                 printf("\nPodaj swoje hasło:\n");
                 std::cin>> loginData->passwd;
 
+                memcpy(&nickname, loginData->username, sizeof(nickname));
+
                 memcpy(msg->payload, loginData, sizeof(Login));
 
                 send(sock, (char*)msg, msgSize, 0);
@@ -132,6 +169,7 @@ int main(int argc, char const *argv[])
                     std::cout<< receiveMsg->payload <<std::endl;
 
                     if(strcmp(receiveMsg->payload, "Zarejestrowano pomyślnie!\n") == 0) {
+                        memcpy(&nickname, registerData->username, sizeof(nickname));
                         isAuth = true;
                     }
                 }
@@ -144,6 +182,24 @@ int main(int argc, char const *argv[])
     }
     if(isAuth) {
         std::cout<<"\nwszystko ok"<<std::endl;
+        msg->msgID = 3;
+
+        msgSize = sizeof(Header) * sizeof(Message) - sizeof(char);
+
+        while(1) {
+
+            std::thread rcv(rcvMsg, sock, buffer);
+            std::thread snd(sndMsg, sock, msgSize, msg);
+
+            rcv.detach();
+            snd.detach();
+        }
+/*
+        
+
+        
+*/
+
     }
     else {
         std::cout<<"\ncos nie halo"<<std::endl;

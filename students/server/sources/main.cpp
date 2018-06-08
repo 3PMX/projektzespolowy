@@ -36,6 +36,11 @@ struct activeUsers {
     int socket;
 };
 
+struct Message {
+    char who[128];
+    char msgContent[1024];
+};
+
 const char* database = "database.txt";
 std::vector<Login> loginData;
 std::vector<activeUsers> users;
@@ -149,7 +154,7 @@ void clientHandler(int new_socket, std::vector<Login> user) {
                 send(new_socket, (char*)msg, msgSize, 0);
 
                 isAuth = true;
-                std::cout<<users[0].username<<std::endl;
+                //std::cout<<users[0].username<<std::endl;
             }
         }
         if(!isAuth)
@@ -223,6 +228,52 @@ void clientHandler(int new_socket, std::vector<Login> user) {
                 
             send(new_socket, (char*)msg, msgSize, 0);
         }
+    }
+    else if(receiveMsg->msgID == 3) {
+        Message* receivePayload = (Message*)(receiveMsg->payload);
+
+        msgSize = sizeof(Header) * sizeof(Message) - sizeof(char) - sizeof(int);
+
+        printf("Dane wiadomosci(socket przychodzacy, zawartosc):\n");
+        std::cout<< new_socket <<std::endl;
+        std::cout<< receivePayload->who <<": ";
+        std::cout<< receivePayload->msgContent <<std::endl;
+
+        Message* msgInfo = new Message;
+
+        strcpy(msgInfo->who, receivePayload->who);
+        strcpy(msgInfo->msgContent, receivePayload->msgContent);
+
+        std::string str = msgInfo->msgContent;
+        
+        std::string param = str.substr(0,2);
+        std::size_t pos1 = 1 + str.find(' ');
+        std::size_t pos2 = str.find(' ', pos1);
+        std::string where = str.substr(pos1, pos2-pos1);
+        std::string content = str.substr(pos2+1);
+
+        std::cout << where << '\n' << content << '\n';
+        
+        msg = (Header*)malloc(msgSize);
+        
+        if(param == "/w") {
+            for(unsigned int i = 0; i < users.size()-1; i++) {
+                if(users.at(i).username == where) {
+                    memcpy(msg->payload, msgInfo, sizeof(Message));
+
+                    send(users.at(i).socket, (char*)msg, msgSize, 0);
+                }
+            }
+        }
+        else {
+            for(unsigned int i = 0; i < users.size()-1; i++) {
+                if(users.at(i).socket != new_socket) {
+                    memcpy(msg->payload, receivePayload, sizeof(Message));
+
+                    send(users.at(i).socket, (char*)msg, msgSize, 0);
+                }
+            }
+        }  
     }
 }
 
