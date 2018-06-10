@@ -1,4 +1,3 @@
-// Client side C/C++ program to demonstrate Socket programming
 #include <stdio.h>
 #include <sys/socket.h>
 #include <stdlib.h>
@@ -7,12 +6,15 @@
 #include <arpa/inet.h>
 #include <iostream>
 #include <thread>
+#include <mutex>
+#include <unistd.h>
 #define PORT 8080
 
 struct Header {
     unsigned int msgID;
     unsigned int contentSize;
     char payload[1];
+	
 };
 
 struct Login {
@@ -39,7 +41,7 @@ void rcvMsg(int sock, char buffer[]) {
             
         Message* receivePayload = (Message*)(receiveMsg->payload);
 
-        std::cout<<receivePayload->who<<": "<<receivePayload->msgContent<<std::endl;
+        std::cout<<(*receivePayload).who<<"	"<<(*receivePayload).msgContent<<std::endl;
     }
 }
 
@@ -50,7 +52,7 @@ void sndMsg(int sock, unsigned int msgSize, Header* msg) {
         
     Message* msgDetails = new Message;
 
-    std::cout<<">";
+    
     std::cin>>msgDetails->msgContent;
 
     memcpy(msgDetails->who, &nickname, sizeof(nickname));
@@ -131,7 +133,7 @@ int main(int argc, char const *argv[])
                     }
                 }
 
-                free(msg);
+              free(msg);
 
                 break;
             }
@@ -180,32 +182,37 @@ int main(int argc, char const *argv[])
             break;
 
     }
+
+	
     if(isAuth) {
         std::cout<<"\nwszystko ok"<<std::endl;
         msg->msgID = 3;
 
-        msgSize = sizeof(Header) * sizeof(Message) - sizeof(char);
+        
 
         while(1) {
+		msgSize = sizeof(Header) * sizeof(Message) - sizeof(char);
 
             std::thread rcv(rcvMsg, sock, buffer);
+		 
             std::thread snd(sndMsg, sock, msgSize, msg);
+		rcv.join();
+		snd.join();
 
             rcv.detach();
-            snd.detach();
+           snd.detach();
         }
 /*
         
-
         
 */
 
     }
     else {
-        std::cout<<"\ncos nie halo"<<std::endl;
+        std::cout<<"\ncos nie tak"<<std::endl;
     }
     
     
 
-    return 0;
+    return ( 0 );
 }
